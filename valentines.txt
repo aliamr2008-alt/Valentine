@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Will You Be My Valentine?</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      text-align: center;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    .page {
+      display: none;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 28px 22px 26px;
+      border-radius: 22px;
+      max-width: 420px;
+      width: 92%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      animation: fadeIn 0.4s ease-in-out;
+      position: relative;
+      z-index: 2;
+    }
+
+    .page.active { display: block; }
+
+    h1 { margin-top: 10px; color: #e63946; font-size: 1.9rem; }
+
+    p { font-size: 1.05rem; color: #333; line-height: 1.6; }
+
+    /* Larger photo - top right */
+    .photo {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid #ff6b81;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+      z-index: 5;
+      background: white;
+    }
+
+    .buttons {
+      margin-top: 22px;
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+      height: 70px;
+    }
+
+    button {
+      padding: 12px 28px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+
+    button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+    .yes { background: #e63946; color: white; }
+    .no { background: #adb5bd; color: #222; position: absolute; }
+    .try-again { background: #457b9d; color: white; }
+    .back { background: #1d3557; color: white; }
+
+    textarea {
+      width: 100%;
+      min-height: 170px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      resize: vertical;
+      margin-top: 15px;
+    }
+
+    /* Floating hearts */
+    .heart {
+      position: fixed;
+      bottom: -20px;
+      color: #ff4d6d;
+      font-size: 18px;
+      animation: floatUp linear forwards;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp { to { transform: translateY(-110vh); opacity: 0; } }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+    /* Intro Screen */
+    #intro {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #ff758c, #ff7eb3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      z-index: 10;
+      animation: fadeIn 0.6s ease;
+      padding: 20px;
+    }
+
+    #intro h1 { color: white; font-size: 2.2rem; }
+
+    #startBtn { background: white; color: #e63946; font-weight: bold; padding: 14px 34px; }
+
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      top: -10px;
+      width: 8px;
+      height: 14px;
+      opacity: 0.9;
+      animation: fall linear forwards;
+      z-index: 3;
+    }
+
+    @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+    /* Firework */
+    .firework {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      animation: explode 1s ease-out forwards;
+      z-index: 4;
+    }
+
+    @keyframes explode { to { transform: translate(var(--x), var(--y)); opacity: 0; } }
+
+    /* Mobile optimization */
+    @media (max-width: 480px) {
+      h1 { font-size: 1.6rem; }
+      p { font-size: 1rem; }
+      .photo {
+        width: 120px;
+        height: 120px;
+        top: 10px;
+        right: 10px;
+      }
+      .page { padding: 22px 18px 22px; }
+      button { padding: 11px 22px; font-size: 0.95rem; }
+      textarea { min-height: 150px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Intro Screen -->
+  <div id="intro">
+    <h1>💖 A Special Surprise 💖</h1>
+    <p>Tap to begin...</p>
+    <button id="startBtn">Start</button>
+  </div>
+
+  <!-- Romantic Music -->
+  <audio id="bg-music" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/10/25/audio_6b92f94c54.mp3?filename=romantic-piano-ambient-118186.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Main Page -->
+  <div id="page-main" class="page">
+    <img src="her-photo.jpg" alt="Jana" class="photo" />
+    <h1>Jana 💖</h1>
+    <p>Will you be my Valentine?</p>
+    <div class="buttons">
+      <button class="yes" onclick="yesClicked()">Yes</button>
+      <button class="no" id="noBtn">No</button>
+    </div>
+  </div>
+
+  <!-- No Page -->
+  <div id="page-no" class="page">
+    <h1>Please 🥺</h1>
+    <p>I promise you will like it, please try again.</p>
+    <div class="buttons" style="height:auto;">
+      <button class="try-again" onclick="goTo('main')">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Yes Page -->
+  <div id="page-yes" class="page">
+    <h1>My Letter to You 💌</h1>
+    <p id="typeOutput" style="margin-top:15px; font-size:1.05rem; white-space:pre-wrap; max-height:50vh; overflow-y:auto; padding-right:6px;"></p>
+    <div class="buttons" style="height:auto;">
+      <button class="back" onclick="goTo('main')">Back to Start</button>
+    </div>
+  </div>
+
+  <script>
+    const music = document.getElementById('bg-music');
+
+    document.getElementById('startBtn').onclick = () => {
+      document.getElementById('intro').style.display = 'none';
+      goTo('main');
+      music.play();
+    };
+
+    function goTo(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+    }
+
+    // Runaway No button 😈
+    const noBtn = document.getElementById('noBtn');
+    noBtn.addEventListener('mouseover', moveButton);
+    noBtn.addEventListener('touchstart', moveButton);
+    noBtn.addEventListener('click', () => goTo('no'));
+
+    function moveButton() {
+      const x = Math.random() * 220 - 110;
+      const y = Math.random() * 120 - 60;
+      noBtn.style.transform = `translate(${x}px, ${y}px)`;
+    }
+
+    // Floating hearts 💕
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.innerText = '❤';
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.fontSize = Math.random() * 20 + 12 + 'px';
+      heart.style.animationDuration = Math.random() * 3 + 4 + 's';
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 7000);
+    }
+    setInterval(createHeart, 350);
+
+    // Confetti + Fireworks 🎆
+        const loveLetter = `My dearest Jojo,
+
+I just want to take a moment to tell you how deeply and truly I love you. Sometimes words don’t feel big enough to carry what’s in my heart, but I’ll try my best.
+
+You mean more to me than I can ever fully explain. From the way you smile to the way you care, from the little things you do to the big dreams you hold — everything about you makes my life brighter. You bring me peace, happiness, and a sense of home that I never knew before you.
+
+When I think about you, my heart feels full. You make even ordinary moments feel special, and just knowing you’re in my life makes every day better. Your love gives me strength, comfort, and hope, and I’m endlessly grateful for you.
+
+I love the way you understand me, support me, and believe in me. I love how you make me laugh, how you listen, and how you make me feel safe just by being you. You are truly one of a kind, and I’m so lucky to love you and to be loved by you.
+
+No matter where life takes us, my heart is yours baby. Always.
+
+With all my love,
+❤️`;
+
+    function playTypewriterAuto() {
+      const output = document.getElementById('typeOutput');
+      output.textContent = '';
+      let i = 0;
+      const speed = 35;
+      const interval = setInterval(() => {
+        output.textContent += loveLetter.charAt(i);
+        i++;
+        if (i >= loveLetter.length) clearInterval(interval);
+      }, speed);
+    }
+
+    function yesClicked() {
+      launchConfetti();
+      launchFireworks();
+      setTimeout(() => {
+        goTo('yes');
+        playTypewriterAuto();
+      }, 700);
+    }
+
+    function createFirework() {
+      launchConfetti();
+      launchFireworks();
+      setTimeout(() => goTo('yes'), 700);
+    }
+
+    function launchConfetti() {
+      for (let i = 0; i < 120; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.background = `hsl(${Math.random() * 360}, 90%, 60%)`;
+        confetti.style.animationDuration = Math.random() * 2 + 3 + 's';
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    }
+
+    function launchFireworks() {
+      for (let i = 0; i < 8; i++) {
+        setTimeout(() => createFirework(), i * 200);
+      }
+    }
+
+        function playTypewriter() {
+      const text = document.getElementById('letterInput').value;
+      const output = document.getElementById('typeOutput');
+      output.textContent = '';
+      let i = 0;
+      const speed = 45;
+      const interval = setInterval(() => {
+        output.textContent += text.charAt(i);
+        i++;
+        if (i >= text.length) clearInterval(interval);
+      }, speed);
+    }
+
+    function createFirework() {
+      const centerX = Math.random() * window.innerWidth;
+      const centerY = Math.random() * window.innerHeight * 0.5 + 100;
+      for (let i = 0; i < 30; i++) {
+        const fw = document.createElement('div');
+        fw.className = 'firework';
+        fw.style.left = centerX + 'px';
+        fw.style.top = centerY + 'px';
+        fw.style.background = `hsl(${Math.random() * 360}, 90%, 60%)`;
+        fw.style.setProperty('--x', (Math.random() * 300 - 150) + 'px');
+        fw.style.setProperty('--y', (Math.random() * 300 - 150) + 'px');
+        document.body.appendChild(fw);
+        setTimeout(() => fw.remove(), 1000);
+      }
+    }
+  </script>
+
+</body>
+</html>
